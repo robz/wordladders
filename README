@@ -1,3 +1,13 @@
-WordLadders 0.0
+WordLadders 0.5
+
+Run with Ruby1.9.1
+
+Run from command line:
+$ ./wordladders.rb
+Enter start word and end word
+stone money
+
+
+
 
 http://atxsm.org

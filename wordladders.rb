@@ -1,9 +1,12 @@
 #!/usr/bin/env ruby1.9.1
 
+
+word_list =
 class Node
 	attr_accessor :word, :neighbors, :target_word
 	
 	def initialize(word, target_word)
+		word_list = 
 		@word = word
 		@target_word = target_word
 	end
@@ -62,6 +65,39 @@ def print_word_ladder(word_ladder)
 	end
 end
 
+def find_path(node, word_list)
+	max_depth = 10
+	current_depth = 0 
+	path = []
+	visited_words = []
+	
+	current_node = node
+	end_word = current_node.target_word
+	while current_node.word != end_word	
+		current_depth += 1
+			
+		if current_depth > max_depth
+			path = nil
+			puts "Max search depth reached -- No word ladder found!"
+			break
+		end
+		if visited_words.include? current_node.word
+			next
+		end	
+			visited_words << current_node.word
+			path << current_node.word
+			new_node = Node.new(closest_word(current_node.neighbors),end_word)
+  		new_node.set_neighbors(word_list)
+			current_node = new_node
+			p current_node.word
+			p visited_words
+	end 
+	if path != nil
+		path << end_word
+	end
+	path
+end
+
 user_input = get_user_input
 start_word = user_input[0]
 end_word = user_input[1]
@@ -69,31 +105,30 @@ end_word = user_input[1]
 raw_words = File.read("5_letter_words.txt")
 word_list = words_from_string(raw_words)
 
-current_node = Node.new(start_word,end_word)
-current_node.set_neighbors(word_list)
+start_node = Node.new(start_word,end_word)
+start_node.set_neighbors(word_list)
 
-max_depth = 10
-current_depth = 0 
-path = []
-visited_words = []
+p start_node.neighbors
 
-while current_node.word != end_word
-	if current_depth >= max_depth
-		puts "Max search depth reached -- No word ladder found!"
-		break
+start_node.neighbors.sort { |k,v| k[1]<=>v[1] }
+p start_node.neighbors
+
+all_paths_from_start_node = []
+start_node.neighbors.each_key do |neighbor|
+	used = []
+	node = Node.new(neighbor, end_word)
+	node.set_neighbors(word_list)
+	path = find_path(node, word_list)
+	if path != nil
+	path
+	p path
+  used << path[0]
+	all_paths_from_start_node << path
 	end
-	if visited_words.include? current_node.word
-		next
-	end	
-		p current_node.word
-		p current_node.neighbors
-		visited_words << current_node.word
-		path << current_node.word
-		new_node = Node.new(closest_word(current_node.neighbors),end_word)
-  	new_node.set_neighbors(word_list)
-		current_node = new_node
-		current_depth += 1
-end 
-path << end_word
+end
 
-print_word_ladder(path)
+all_paths_from_start_node.each do |path|
+	puts "-----"
+	puts start_word
+	puts path
+end
