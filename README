@@ -2,7 +2,7 @@ WordLadders 1.0
 
 A word of caution - By no means is this code 'clean'.  In fact, this is a pretty ugly implementation.  You might even scourge at some of the distastful patterns you see.
 
-None-the-less I really just wanted to get my path finding algorithm working. Code clean-up with be continuously going on.  
+None-the-less I really just wanted to get my path finding algorithm working. Code clean-up with be continuously going on.  Also, in the process, I plan to write some tests, most likely using rspec. 
 
 Please comment with suggestions, tips, or cruel remarks.
 Michael May
