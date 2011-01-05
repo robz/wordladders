@@ -78,7 +78,6 @@ def find_path(node, word_list)
 			
 		if current_depth > max_depth
 			path = nil
-			puts "Max search depth reached -- No word ladder found!"
 			break
 		end
 		if visited_words.include? current_node.word
@@ -89,8 +88,6 @@ def find_path(node, word_list)
 			new_node = Node.new(closest_word(current_node.neighbors),end_word)
   		new_node.set_neighbors(word_list)
 			current_node = new_node
-			p current_node.word
-			p visited_words
 	end 
 	if path != nil
 		path << end_word
@@ -98,6 +95,13 @@ def find_path(node, word_list)
 	path
 end
 
+def print_all(all_paths, start_word)
+	all_paths.each do |path|
+		puts "__--Word Ladder--__"
+		puts start_word
+		puts path
+	end
+end
 user_input = get_user_input
 start_word = user_input[0]
 end_word = user_input[1]
@@ -108,10 +112,8 @@ word_list = words_from_string(raw_words)
 start_node = Node.new(start_word,end_word)
 start_node.set_neighbors(word_list)
 
-p start_node.neighbors
 
 start_node.neighbors.sort { |k,v| k[1]<=>v[1] }
-p start_node.neighbors
 
 all_paths_from_start_node = []
 start_node.neighbors.each_key do |neighbor|
@@ -121,14 +123,13 @@ start_node.neighbors.each_key do |neighbor|
 	path = find_path(node, word_list)
 	if path != nil
 	path
-	p path
   used << path[0]
 	all_paths_from_start_node << path
 	end
 end
 
-all_paths_from_start_node.each do |path|
-	puts "-----"
-	puts start_word
-	puts path
+if all_paths_from_start_node.size == 0
+	puts "No Word Ladders for #{start_word} to #{end_word}"
+else
+	print_all(all_paths_from_start_node, start_word)
 end
