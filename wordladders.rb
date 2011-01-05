@@ -12,7 +12,7 @@ class Node
 	end
 	
 	def set_neighbors(word_list)
-		neighbors = {} # hash of form {word=># letters different from target_word}
+		neighbors = {} # hash of form {word => # letters different from target_word}
 		word_list.each do |word|
 			if count_different_letters(@word, word) == 1
 				neighbors[word] = count_different_letters(word, target_word)								
@@ -102,19 +102,16 @@ def print_all(all_paths, start_word)
 		puts path
 	end
 end
+
 user_input = get_user_input
 start_word = user_input[0]
 end_word = user_input[1]
-
 raw_words = File.read("5_letter_words.txt")
 word_list = words_from_string(raw_words)
 
 start_node = Node.new(start_word,end_word)
 start_node.set_neighbors(word_list)
-
-
 start_node.neighbors.sort { |k,v| k[1]<=>v[1] }
-
 all_paths_from_start_node = []
 start_node.neighbors.each_key do |neighbor|
 	used = []
@@ -122,9 +119,9 @@ start_node.neighbors.each_key do |neighbor|
 	node.set_neighbors(word_list)
 	path = find_path(node, word_list)
 	if path != nil
-	path
-  used << path[0]
-	all_paths_from_start_node << path
+		path
+  	used << path[0]
+		all_paths_from_start_node << path
 	end
 end
 
