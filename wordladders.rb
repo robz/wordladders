@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby1.9.1
 
-
-word_list =
 class Node
 	attr_accessor :word, :neighbors, :target_word
 	
@@ -40,7 +38,6 @@ class Node
 		eql	
 	end
 end
-  
 
 def words_from_string(string)
 	string.downcase.scan(/[\w']+/)
@@ -58,11 +55,8 @@ def closest_word(neighbors)
 	neighbors.key weights[0]	
 end
 
-def print_word_ladder(word_ladder)
-	puts "Word Ladder:"
-	word_ladder.each do |word|
-		puts word
-	end
+def hashset_sort(hash)
+	hash.sort { |k,v| k[1]<=>v[1] }
 end
 
 def find_path(node, word_list)
@@ -70,12 +64,10 @@ def find_path(node, word_list)
 	current_depth = 0 
 	path = []
 	visited_words = []
-	
+	end_word = node.target_word
 	current_node = node
-	end_word = current_node.target_word
 	while current_node.word != end_word	
 		current_depth += 1
-			
 		if current_depth > max_depth
 			path = nil
 			break
@@ -111,7 +103,7 @@ word_list = words_from_string(raw_words)
 
 start_node = Node.new(start_word,end_word)
 start_node.set_neighbors(word_list)
-start_node.neighbors.sort { |k,v| k[1]<=>v[1] }
+hashset_sort(start_node.neighbors)
 all_paths_from_start_node = []
 start_node.neighbors.each_key do |neighbor|
 	used = []
