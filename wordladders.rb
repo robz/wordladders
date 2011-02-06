@@ -3,23 +3,32 @@
 class Node
 	attr_accessor :word, :neighbors, :target_word
 	
-	def initialize(word, target_word)
-		word_list = 
+	def initialize(word, target_word, word_list)
 		@word = word
 		@target_word = target_word
+	  self.neighbors=(word_list)
 	end
 	
-	def set_neighbors(word_list)
-		neighbors = {} # hash of form {word => # letters different from target_word}
-		word_list.each do |word|
-			if count_different_letters(@word, word) == 1
-				neighbors[word] = count_different_letters(word, target_word)								
-			end		
-		end
-		@neighbors = neighbors
+	def neighbors=(word_list)
+		@neighbors = generate_node_neighbors(word_list)
+	end	
+
+  def hashset_sort(hash)
+    hash.sort { |k,v| k[1]<=>v[1] }
+  end
+
+	private 
+	def generate_node_neighbors(word_list)
+	  neighbors = {} # hash of form {word => # letters different from target_word}
+		  word_list.each do |word|
+			  if numb_letters_different(@word, word) == 1
+				  neighbors[word] = numb_letters_different(word, target_word)
+			  end		
+		  end
+		neighbors
 	end
 	
-	def count_different_letters(word1, word2)
+	def numb_letters_different(word1, word2)
     letters_diff = 0
     zipped = word1.chars.to_a.zip word2.chars.to_a
 		zipped.each do |letter_set|
@@ -29,96 +38,108 @@ class Node
     end
     letters_diff
   end
-
-	def equal(node)
-		eql = false		
-		if @word.eql? node.word and @neighbors.eql? node.neighbors
-			eql = true
-		end
-		eql	
-	end
 end
 
-def words_from_string(string)
-	string.downcase.scan(/[\w']+/)
+class WordLadders
+  attr_accessor :start_word, :end_word, :word_list
+
+  def initialize(start_word, end_word)
+    @start_word = start_word
+    @end_word = end_word
+  end
+
+  def build
+    all_word_ladders = []
+    start_node = Node.new(@start_word,@end_word,@word_list)
+
+    start_node.hashset_sort(start_node.neighbors)
+
+    start_node.neighbors.each_key do |neighbor|
+      node = Node.new(neighbor, @end_word, @word_list)
+      path = search_for_word_ladder(node)
+      if path != nil
+        path
+        all_word_ladders << path
+      end
+    end
+    all_word_ladders
+  end
+
+  def search_for_word_ladder(node)
+    max_depth = 18
+    current_depth = 0
+    path = []
+    visited_words = []
+    end_word = node.target_word
+    current_node = node
+    while current_node.word != end_word
+      current_depth += 1
+      if current_depth > max_depth
+        path = nil
+        break
+      end
+      if visited_words.include? current_node.word
+        next
+      end
+      path << current_node.word
+      visited_words << current_node.word
+      new_node = Node.new(nearest_neighbor(current_node.neighbors),end_word,@word_list)
+      current_node = new_node
+    end
+    if path != nil
+      path << end_word
+    end
+    path
+  end
+
+  def nearest_neighbor(neighbors)
+    letters_different = neighbors.values
+    letters_different.sort!
+    neighbors.key letters_different[0]
+  end
 end
 
-def get_user_input 
-	puts 'Enter start word and end word'
-	user_input = gets
-	words_from_string(user_input)
+class WordLaddersClient
+
+  public
+  def run(word_list_filename)
+    user_input = get_user_input
+    start_word = user_input[0]
+    end_word = user_input[1]
+    word_ladders = WordLadders.new(start_word, end_word)
+    word_ladders.word_list = read_word_list(word_list_filename)
+    all_word_ladders = word_ladders.build
+    output_word_ladders(all_word_ladders, start_word, end_word)
+  end
+  
+  private
+  def get_user_input 
+	  puts 'Enter start word and end word'
+	  user_input = gets
+	  user_input.downcase.scan(/[\w']+/)
+  end
+
+  def read_word_list(filename)
+    raw_words = File.read(filename)
+    raw_words.downcase.scan(/[\w']+/)
+  end
+
+  def output_word_ladders(all_word_ladders, start_word, end_word)
+    if all_word_ladders.size == 0
+	    puts "No Word Ladders for #{start_word} to #{end_word}"
+    else
+	    print(all_word_ladders, start_word)
+    end
+  end
+
+  def print(all_paths, start_word)
+	  all_paths.each do |path|
+		  puts "__--Word Ladder--__"
+		  puts start_word
+		  puts path
+	  end
+  end
 end
 
-def closest_word(neighbors)
-	weights = neighbors.values
-	weights.sort!
-	neighbors.key weights[0]	
-end
-
-def hashset_sort(hash)
-	hash.sort { |k,v| k[1]<=>v[1] }
-end
-
-def find_path(node, word_list)
-	max_depth = 10
-	current_depth = 0 
-	path = []
-	visited_words = []
-	end_word = node.target_word
-	current_node = node
-	while current_node.word != end_word	
-		current_depth += 1
-		if current_depth > max_depth
-			path = nil
-			break
-		end
-		if visited_words.include? current_node.word
-			next
-		end	
-			visited_words << current_node.word
-			path << current_node.word
-			new_node = Node.new(closest_word(current_node.neighbors),end_word)
-  		new_node.set_neighbors(word_list)
-			current_node = new_node
-	end 
-	if path != nil
-		path << end_word
-	end
-	path
-end
-
-def print_all(all_paths, start_word)
-	all_paths.each do |path|
-		puts "__--Word Ladder--__"
-		puts start_word
-		puts path
-	end
-end
-
-user_input = get_user_input
-start_word = user_input[0]
-end_word = user_input[1]
-raw_words = File.read("5_letter_words.txt")
-word_list = words_from_string(raw_words)
-
-start_node = Node.new(start_word,end_word)
-start_node.set_neighbors(word_list)
-hashset_sort(start_node.neighbors)
-all_paths_from_start_node = []
-start_node.neighbors.each_key do |neighbor|
-	used = []
-	node = Node.new(neighbor, end_word)
-	node.set_neighbors(word_list)
-	path = find_path(node, word_list)
-	if path != nil
-		path
-  	used << path[0]
-		all_paths_from_start_node << path
-	end
-end
-
-if all_paths_from_start_node.size == 0
-	puts "No Word Ladders for #{start_word} to #{end_word}"
-else
-	print_all(all_paths_from_start_node, start_word)
-end
+client = WordLaddersClient.new
+client.run("5_letter_words.txt")
