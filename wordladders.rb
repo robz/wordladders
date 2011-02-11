@@ -48,50 +48,55 @@ class WordLadders
     @end_word = end_word
   end
 
-  def build
-    all_word_ladders = []
+  def build_all
     start_node = Node.new(@start_word,@end_word,@word_list)
-
     start_node.hashset_sort(start_node.neighbors)
-
-    start_node.neighbors.each_key do |neighbor|
-      node = Node.new(neighbor, @end_word, @word_list)
-      path = search_for_word_ladder(node)
-      if path != nil
-        path
-        all_word_ladders << path
+    all_word_ladders = []
+    start_node.neighbors.each_key do |neighboring_word|
+      adjacent_node = Node.new(neighboring_word, @end_word, @word_list)
+      word_ladder = [start_node.word]
+      word_ladder << find_ladder_to_end_word(adjacent_node)
+      if !word_ladder.include? nil
+        all_word_ladders << word_ladder
       end
     end
     all_word_ladders
   end
 
-  def search_for_word_ladder(node)
+  def find_ladder_to_end_word(starting_node)
     max_depth = 18
     current_depth = 0
-    path = []
+    word_ladder = []
     visited_words = []
-    end_word = node.target_word
-    current_node = node
-    while current_node.word != end_word
+    current_node = starting_node
+    while current_node.word != @end_word
       current_depth += 1
       if current_depth > max_depth
-        path = nil
+        word_ladder = nil
         break
       end
       if visited_words.include? current_node.word
         next
       end
-      path << current_node.word
+      word_ladder << current_node.word
       visited_words << current_node.word
-      new_node = Node.new(nearest_neighbor(current_node.neighbors),end_word,@word_list)
-      current_node = new_node
+      next_node = Node.new(nearest_neighbor(current_node.neighbors),@end_word,@word_list)
+      current_node = next_node
     end
-    if path != nil
-      path << end_word
+    if word_ladder != nil
+      word_ladder << @end_word
     end
-    path
+    word_ladder
   end
 
+  def print(all_word_ladders)
+	  all_word_ladders.each do |path|
+		  puts "__--Word Ladder--__"
+		  puts path
+	  end
+  end
+
+  private
   def nearest_neighbor(neighbors)
     letters_different = neighbors.values
     letters_different.sort!
@@ -100,7 +105,6 @@ class WordLadders
 end
 
 class WordLaddersClient
-
   public
   def run(word_list_filename)
     user_input = get_user_input
@@ -108,8 +112,12 @@ class WordLaddersClient
     end_word = user_input[1]
     word_ladders = WordLadders.new(start_word, end_word)
     word_ladders.word_list = read_word_list(word_list_filename)
-    all_word_ladders = word_ladders.build
-    output_word_ladders(all_word_ladders, start_word, end_word)
+    all_word_ladders = word_ladders.build_all
+    if all_word_ladders.size == 0
+      puts "No Word Ladders for #{start_word} to #{end_word}"
+    else
+      word_ladders.print(all_word_ladders)
+    end
   end
   
   private
@@ -122,22 +130,6 @@ class WordLaddersClient
   def read_word_list(filename)
     raw_words = File.read(filename)
     raw_words.downcase.scan(/[\w']+/)
-  end
-
-  def output_word_ladders(all_word_ladders, start_word, end_word)
-    if all_word_ladders.size == 0
-	    puts "No Word Ladders for #{start_word} to #{end_word}"
-    else
-	    print(all_word_ladders, start_word)
-    end
-  end
-
-  def print(all_paths, start_word)
-	  all_paths.each do |path|
-		  puts "__--Word Ladder--__"
-		  puts start_word
-		  puts path
-	  end
   end
 end
 
